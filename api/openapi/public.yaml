@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: User Management Public API
+  version: 1.0.0
+  description: |
+    Public REST surface. Only `GET /public/v1/users/{id}` is available.
+    Create, list, update, and delete are internal-only (gRPC or `/internal/v1`).
+servers:
+  - url: http://localhost:8080
+    description: Local public HTTP listener
+paths:
+  /public/v1/users/{id}:
+    get:
+      summary: View user details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Public-safe user details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+components:
+  schemas:
+    User:
+      type: object
+      required: [id, username, email, params, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          nullable: true
+        params:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

@@ -1,0 +1,6 @@
+.git
+.omc
+*.md
+api/openapi
+.env
+.env.*

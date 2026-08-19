@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package usermgmt.v1;
+
+option go_package = "github.com/npbtrac/demo-go-user-management/api/proto/usermgmt/v1;usermgmtv1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// UserService is the internal gRPC contract for user CRUD.
+// It is intended for service-to-service traffic only and must not be exposed publicly.
+service UserService {
+  // CreateUser creates a user. Duplicate username or email returns ALREADY_EXISTS.
+  rpc CreateUser(CreateUserRequest) returns (User);
+
+  // GetUser returns a user by id. Missing ids return NOT_FOUND.
+  rpc GetUser(GetUserRequest) returns (User);
+
+  // ListUsers returns a page of users ordered by created_at descending.
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+
+  // UpdateUser updates provided fields and bumps updated_at.
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+
+  // DeleteUser hard-deletes a user by id. Missing ids return NOT_FOUND.
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+}
+
+// User is the canonical user record returned by all RPCs.
+message User {
+  // Server-generated UUID.
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  // Empty when unset.
+  string phone = 4;
+  // Uncategorized JSON object. Always present; defaults to {}.
+  google.protobuf.Struct params = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string phone = 3;
+  google.protobuf.Struct params = 4;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message ListUsersRequest {
+  // Default 20, maximum 100.
+  int32 page_size = 1;
+  // Opaque token from a previous ListUsersResponse.
+  string page_token = 2;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  string next_page_token = 2;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  // When set, replace username.
+  optional string username = 2;
+  // When set, replace email.
+  optional string email = 3;
+  // When set, replace phone. Empty string clears phone.
+  optional string phone = 4;
+  // When set, replace params. Must be a JSON object.
+  google.protobuf.Struct params = 5;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
