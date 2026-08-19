@@ -6,7 +6,7 @@ info:
     Internal REST surface for full user CRUD. Do not expose `/internal` to the public internet.
     Service-to-service callers that prefer HTTP should use this API. Prefer gRPC (`usermgmt.v1.UserService`) on the mesh when possible.
 servers:
-  - url: http://localhost:8081
+  - url: http://localhost:10101
     description: Local internal HTTP listener
 paths:
   /internal/v1/users:

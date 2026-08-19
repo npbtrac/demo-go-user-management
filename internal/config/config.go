@@ -18,9 +18,9 @@ type Config struct {
 func FromEnv() (Config, error) {
 	cfg := Config{
 		DatabaseURL:      strings.TrimSpace(os.Getenv("DATABASE_URL")),
-		PublicHTTPAddr:   envOr("PUBLIC_HTTP_ADDR", ":8080"),
-		InternalHTTPAddr: envOr("INTERNAL_HTTP_ADDR", ":8081"),
-		GRPCAddr:         envOr("GRPC_ADDR", ":9090"),
+		PublicHTTPAddr:   envOr("PUBLIC_HTTP_ADDR", ":10100"),
+		InternalHTTPAddr: envOr("INTERNAL_HTTP_ADDR", ":10101"),
+		GRPCAddr:         envOr("GRPC_ADDR", ":10102"),
 	}
 	if cfg.DatabaseURL == "" {
 		return Config{}, fmt.Errorf("DATABASE_URL is required")

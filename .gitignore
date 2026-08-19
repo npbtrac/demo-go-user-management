@@ -10,3 +10,4 @@
 coverage.out
 vendor/
 .omc/
+tmp/

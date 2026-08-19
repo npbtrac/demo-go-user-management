@@ -11,6 +11,6 @@ FROM alpine:3.21
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=build /out/usermgmt /app/usermgmt
-EXPOSE 8080 8081 9090
+EXPOSE 10100 10101 10102
 USER nobody
 ENTRYPOINT ["/app/usermgmt"]

@@ -7,6 +7,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -133,6 +134,7 @@ func ListenAndServe(ctx context.Context, addr string, svc *user.Service) error {
 	}
 	gs := grpc.NewServer()
 	usermgmtv1.RegisterUserServiceServer(gs, NewServer(svc))
+	reflection.Register(gs)
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- gs.Serve(ln)

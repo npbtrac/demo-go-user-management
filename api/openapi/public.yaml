@@ -6,7 +6,7 @@ info:
     Public REST surface. Only `GET /public/v1/users/{id}` is available.
     Create, list, update, and delete are internal-only (gRPC or `/internal/v1`).
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:10100
     description: Local public HTTP listener
 paths:
   /public/v1/users/{id}:

@@ -1,0 +1,39 @@
+# Local development only.
+name: usermgmt
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-usermgmt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-usermgmt}
+      POSTGRES_DB: ${POSTGRES_DB:-usermgmt}
+    ports:
+      - "${POSTGRES_PORT:-10112}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-usermgmt} -d ${POSTGRES_DB:-usermgmt}"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - usermgmt-pg:/var/lib/postgresql/data
+
+  usermgmt:
+    build:
+      context: ..
+      dockerfile: dev-docker/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-usermgmt}:${POSTGRES_PASSWORD:-usermgmt}@postgres:5432/${POSTGRES_DB:-usermgmt}?sslmode=disable
+      PUBLIC_HTTP_ADDR: :${PUBLIC_HTTP_PORT:-10100}
+      INTERNAL_HTTP_ADDR: :${INTERNAL_HTTP_PORT:-10101}
+      GRPC_ADDR: :${GRPC_PORT:-10102}
+    ports:
+      - "${PUBLIC_HTTP_PORT:-10100}:${PUBLIC_HTTP_PORT:-10100}"
+      - "${INTERNAL_HTTP_PORT:-10101}:${INTERNAL_HTTP_PORT:-10101}"
+      - "${GRPC_PORT:-10102}:${GRPC_PORT:-10102}"
+
+volumes:
+  usermgmt-pg:
