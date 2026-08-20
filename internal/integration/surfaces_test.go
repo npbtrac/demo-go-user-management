@@ -20,15 +20,15 @@ import (
 
 	usermgmtv1 "github.com/npbtrac/demo-go-user-management/api/proto/usermgmt/v1"
 	"github.com/npbtrac/demo-go-user-management/internal/db"
-	grpcsvc "github.com/npbtrac/demo-go-user-management/internal/grpc"
 	httpserver "github.com/npbtrac/demo-go-user-management/internal/http"
+	"github.com/npbtrac/demo-go-user-management/internal/serviceapi"
 	"github.com/npbtrac/demo-go-user-management/internal/user"
 )
 
 type stack struct {
 	publicURL   string
 	internalURL string
-	grpc        usermgmtv1.UserServiceClient
+	serviceAPI  usermgmtv1.UserServiceClient
 }
 
 func startStack(t *testing.T) stack {
@@ -82,23 +82,23 @@ func startStack(t *testing.T) stack {
 	if err != nil {
 		t.Fatal(err)
 	}
-	grpcLn, err := net.Listen("tcp", "127.0.0.1:0")
+	serviceAPILn, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
 	publicSrv := &http.Server{Handler: httpserver.PublicMux(svc)}
 	internalSrv := &http.Server{Handler: httpserver.InternalMux(svc)}
 	gs := grpc.NewServer()
-	usermgmtv1.RegisterUserServiceServer(gs, grpcsvc.NewServer(svc))
+	usermgmtv1.RegisterUserServiceServer(gs, serviceapi.NewServer(svc))
 	go publicSrv.Serve(publicLn)
 	go internalSrv.Serve(internalLn)
-	go gs.Serve(grpcLn)
+	go gs.Serve(serviceAPILn)
 	t.Cleanup(func() {
 		_ = publicSrv.Close()
 		_ = internalSrv.Close()
 		gs.Stop()
 	})
-	conn, err := grpc.NewClient(grpcLn.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(serviceAPILn.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func startStack(t *testing.T) stack {
 	return stack{
 		publicURL:   "http://" + publicLn.Addr().String(),
 		internalURL: "http://" + internalLn.Addr().String(),
-		grpc:        usermgmtv1.NewUserServiceClient(conn),
+		serviceAPI:  usermgmtv1.NewUserServiceClient(conn),
 	}
 }
 
@@ -118,28 +118,28 @@ func TestIntegrationSurfaces(t *testing.T) {
 		t.Fatal(err)
 	}
 	suffix := fmt.Sprintf("%d", time.Now().UnixNano())
-	created, err := s.grpc.CreateUser(ctx, &usermgmtv1.CreateUserRequest{
-		Username: "grpc-user-" + suffix,
-		Email:    "grpc-" + suffix + "@example.com",
+	created, err := s.serviceAPI.CreateUser(ctx, &usermgmtv1.CreateUserRequest{
+		Username: "service-user-" + suffix,
+		Email:    "service-" + suffix + "@example.com",
 		Phone:    "+1000",
 		Params:   params,
 	})
 	if err != nil {
-		t.Fatalf("grpc create: %v", err)
+		t.Fatalf("service API create: %v", err)
 	}
-	got, err := s.grpc.GetUser(ctx, &usermgmtv1.GetUserRequest{Id: created.GetId()})
+	got, err := s.serviceAPI.GetUser(ctx, &usermgmtv1.GetUserRequest{Id: created.GetId()})
 	if err != nil {
-		t.Fatalf("grpc get: %v", err)
+		t.Fatalf("service API get: %v", err)
 	}
 	if got.GetParams().GetFields()["source"].GetStringValue() != "it" {
-		t.Fatalf("grpc params %+v", got.GetParams())
+		t.Fatalf("service API params %+v", got.GetParams())
 	}
-	if _, err := s.grpc.ListUsers(ctx, &usermgmtv1.ListUsersRequest{PageSize: 10}); err != nil {
-		t.Fatalf("grpc list: %v", err)
+	if _, err := s.serviceAPI.ListUsers(ctx, &usermgmtv1.ListUsersRequest{PageSize: 10}); err != nil {
+		t.Fatalf("service API list: %v", err)
 	}
 	phone := "+2000"
-	if _, err := s.grpc.UpdateUser(ctx, &usermgmtv1.UpdateUserRequest{Id: created.GetId(), Phone: &phone}); err != nil {
-		t.Fatalf("grpc update: %v", err)
+	if _, err := s.serviceAPI.UpdateUser(ctx, &usermgmtv1.UpdateUserRequest{Id: created.GetId(), Phone: &phone}); err != nil {
+		t.Fatalf("service API update: %v", err)
 	}
 
 	body := []byte(fmt.Sprintf(`{"username":"rest-user-%s","email":"rest-%s@example.com","params":{"a":1}}`, suffix, suffix))
@@ -228,7 +228,7 @@ func TestIntegrationSurfaces(t *testing.T) {
 	if resp.StatusCode != http.StatusNoContent {
 		t.Fatalf("rest delete %d", resp.StatusCode)
 	}
-	if _, err := s.grpc.DeleteUser(ctx, &usermgmtv1.DeleteUserRequest{Id: created.GetId()}); err != nil {
-		t.Fatalf("grpc delete: %v", err)
+	if _, err := s.serviceAPI.DeleteUser(ctx, &usermgmtv1.DeleteUserRequest{Id: created.GetId()}); err != nil {
+		t.Fatalf("service API delete: %v", err)
 	}
 }

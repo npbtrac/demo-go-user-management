@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     Public REST surface. Only `GET /public/v1/users/{id}` is available.
-    Create, list, update, and delete are internal-only (gRPC or `/internal/v1`).
+    Create, list, update, and delete are internal-only (Service API or `/internal/v1`).
 servers:
   - url: http://localhost:10100
     description: Local public HTTP listener

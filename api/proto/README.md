@@ -1,6 +1,6 @@
 # usermgmt.v1.UserService
 
-Internal gRPC contract for user CRUD. Generated Go code lives next to [user.proto](usermgmt/v1/user.proto).
+Service API contract for user CRUD over gRPC. Generated Go code lives next to [user.proto](usermgmt/v1/user.proto).
 
 Regenerate:
 

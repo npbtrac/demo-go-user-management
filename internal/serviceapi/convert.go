@@ -1,4 +1,4 @@
-package grpcsvc
+package serviceapi
 
 import (
 	"encoding/json"

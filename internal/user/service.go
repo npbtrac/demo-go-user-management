@@ -20,7 +20,7 @@ type Repository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// Service is the application API used by HTTP and gRPC adapters.
+// Service is the application API used by HTTP and Service API adapters.
 type Service struct {
 	repo Repository
 	now  func() time.Time

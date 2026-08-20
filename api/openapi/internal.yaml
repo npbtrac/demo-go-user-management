@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     Internal REST surface for full user CRUD. Do not expose `/internal` to the public internet.
-    Service-to-service callers that prefer HTTP should use this API. Prefer gRPC (`usermgmt.v1.UserService`) on the mesh when possible.
+    Service-to-service callers that prefer HTTP should use this API. Prefer the Service API (`usermgmt.v1.UserService` over gRPC) on the mesh when possible.
 servers:
   - url: http://localhost:10101
     description: Local internal HTTP listener

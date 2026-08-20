@@ -1,4 +1,4 @@
-.PHONY: test generate dev compose compose-up compose-build compose-rebuild compose-down smoke smoke-public smoke-internal smoke-grpc
+.PHONY: test generate dev compose compose-up compose-build compose-rebuild compose-down smoke smoke-public smoke-internal smoke-service
 
 test:
 	go test ./...
@@ -38,5 +38,5 @@ smoke-public:
 smoke-internal:
 	go run ./scripts/smoke -only=internal
 
-smoke-grpc:
-	go run ./scripts/smoke -only=grpc
+smoke-service:
+	go run ./scripts/smoke -only=service

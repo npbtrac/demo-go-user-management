@@ -13,8 +13,8 @@ import (
 
 	"github.com/npbtrac/demo-go-user-management/internal/config"
 	"github.com/npbtrac/demo-go-user-management/internal/db"
-	grpcsvc "github.com/npbtrac/demo-go-user-management/internal/grpc"
 	httpserver "github.com/npbtrac/demo-go-user-management/internal/http"
+	"github.com/npbtrac/demo-go-user-management/internal/serviceapi"
 	"github.com/npbtrac/demo-go-user-management/internal/user"
 )
 
@@ -55,8 +55,8 @@ func run() error {
 		return httpserver.NewServer("internal", cfg.InternalHTTPAddr, httpserver.InternalMux(svc)).Serve(ctx)
 	})
 	g.Go(func() error {
-		slog.Info("grpc listening", "addr", cfg.GRPCAddr)
-		return grpcsvc.ListenAndServe(ctx, cfg.GRPCAddr, svc)
+		slog.Info("service API listening", "addr", cfg.ServiceAPIAddr)
+		return serviceapi.ListenAndServe(ctx, cfg.ServiceAPIAddr, svc)
 	})
 	return g.Wait()
 }

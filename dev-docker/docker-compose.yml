@@ -29,11 +29,11 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-usermgmt}:${POSTGRES_PASSWORD:-usermgmt}@postgres:5432/${POSTGRES_DB:-usermgmt}?sslmode=disable
       PUBLIC_HTTP_ADDR: :${PUBLIC_HTTP_PORT:-10100}
       INTERNAL_HTTP_ADDR: :${INTERNAL_HTTP_PORT:-10101}
-      GRPC_ADDR: :${GRPC_PORT:-10102}
+      SERVICE_API_ADDR: :${SERVICE_API_PORT:-10102}
     ports:
       - "${PUBLIC_HTTP_PORT:-10100}:${PUBLIC_HTTP_PORT:-10100}"
       - "${INTERNAL_HTTP_PORT:-10101}:${INTERNAL_HTTP_PORT:-10101}"
-      - "${GRPC_PORT:-10102}:${GRPC_PORT:-10102}"
+      - "${SERVICE_API_PORT:-10102}:${SERVICE_API_PORT:-10102}"
 
 volumes:
   usermgmt-pg:

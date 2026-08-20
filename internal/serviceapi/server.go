@@ -1,4 +1,4 @@
-package grpcsvc
+package serviceapi
 
 import (
 	"context"
@@ -126,7 +126,7 @@ func toStatus(err error) error {
 	}
 }
 
-// ListenAndServe starts a gRPC server on addr until ctx is cancelled.
+// ListenAndServe starts the Service API (gRPC) on addr until ctx is cancelled.
 func ListenAndServe(ctx context.Context, addr string, svc *user.Service) error {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {

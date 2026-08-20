@@ -21,13 +21,13 @@ import (
 )
 
 func main() {
-	only := flag.String("only", "all", "which surface to check: all, public, internal, or grpc")
+	only := flag.String("only", "all", "which surface to check: all, public, internal, or service")
 	flag.Parse()
 	_ = godotenv.Load()
 
 	publicBase := fmt.Sprintf("http://127.0.0.1:%s", envOr("PUBLIC_HTTP_PORT", "10100"))
 	internalBase := fmt.Sprintf("http://127.0.0.1:%s", envOr("INTERNAL_HTTP_PORT", "10101"))
-	grpcAddr := fmt.Sprintf("127.0.0.1:%s", envOr("GRPC_PORT", "10102"))
+	serviceAPIAddr := fmt.Sprintf("127.0.0.1:%s", envOr("SERVICE_API_PORT", "10102"))
 
 	var err error
 	switch strings.ToLower(*only) {
@@ -35,12 +35,12 @@ func main() {
 		err = checkPublic(publicBase, "")
 	case "internal":
 		_, err = checkInternal(internalBase)
-	case "grpc":
-		err = checkGRPC(grpcAddr)
+	case "service":
+		err = checkServiceAPI(serviceAPIAddr)
 	case "all":
-		err = checkAll(publicBase, internalBase, grpcAddr)
+		err = checkAll(publicBase, internalBase, serviceAPIAddr)
 	default:
-		err = fmt.Errorf("unknown -only=%s (want all, public, internal, or grpc)", *only)
+		err = fmt.Errorf("unknown -only=%s (want all, public, internal, or service)", *only)
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "FAIL: %v\n", err)
@@ -49,7 +49,7 @@ func main() {
 	fmt.Println("OK")
 }
 
-func checkAll(publicBase, internalBase, grpcAddr string) error {
+func checkAll(publicBase, internalBase, serviceAPIAddr string) error {
 	id, err := checkInternal(internalBase)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func checkAll(publicBase, internalBase, grpcAddr string) error {
 	if err := checkPublic(publicBase, id); err != nil {
 		return err
 	}
-	return checkGRPC(grpcAddr)
+	return checkServiceAPI(serviceAPIAddr)
 }
 
 func checkPublic(base, knownID string) error {
@@ -108,12 +108,12 @@ func checkInternal(base string) (string, error) {
 	return id, nil
 }
 
-func checkGRPC(addr string) error {
+func checkServiceAPI(addr string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return fmt.Errorf("grpc dial %s: %w", addr, err)
+		return fmt.Errorf("service API dial %s: %w", addr, err)
 	}
 	defer conn.Close()
 	client := usermgmtv1.NewUserServiceClient(conn)
@@ -123,27 +123,27 @@ func checkGRPC(addr string) error {
 		return err
 	}
 	created, err := client.CreateUser(ctx, &usermgmtv1.CreateUserRequest{
-		Username: "grpc-smoke-" + suffix,
-		Email:    "grpc-smoke-" + suffix + "@example.com",
+		Username: "service-smoke-" + suffix,
+		Email:    "service-smoke-" + suffix + "@example.com",
 		Params:   params,
 	})
 	if err != nil {
-		return fmt.Errorf("grpc CreateUser: %w", err)
+		return fmt.Errorf("service API CreateUser: %w", err)
 	}
 	if _, err := client.GetUser(ctx, &usermgmtv1.GetUserRequest{Id: created.GetId()}); err != nil {
-		return fmt.Errorf("grpc GetUser: %w", err)
+		return fmt.Errorf("service API GetUser: %w", err)
 	}
 	if _, err := client.ListUsers(ctx, &usermgmtv1.ListUsersRequest{PageSize: 5}); err != nil {
-		return fmt.Errorf("grpc ListUsers: %w", err)
+		return fmt.Errorf("service API ListUsers: %w", err)
 	}
 	phone := "+101"
 	if _, err := client.UpdateUser(ctx, &usermgmtv1.UpdateUserRequest{Id: created.GetId(), Phone: &phone}); err != nil {
-		return fmt.Errorf("grpc UpdateUser: %w", err)
+		return fmt.Errorf("service API UpdateUser: %w", err)
 	}
 	if _, err := client.DeleteUser(ctx, &usermgmtv1.DeleteUserRequest{Id: created.GetId()}); err != nil {
-		return fmt.Errorf("grpc DeleteUser: %w", err)
+		return fmt.Errorf("service API DeleteUser: %w", err)
 	}
-	fmt.Println("gRPC: ok")
+	fmt.Println("Service API: ok")
 	return nil
 }
 

@@ -31,7 +31,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// UserService is the internal gRPC contract for user CRUD.
+// UserService is the Service API contract for user CRUD (gRPC).
 // It is intended for service-to-service traffic only and must not be exposed publicly.
 type UserServiceClient interface {
 	// CreateUser creates a user. Duplicate username or email returns ALREADY_EXISTS.
@@ -108,7 +108,7 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserReques
 // All implementations should embed UnimplementedUserServiceServer
 // for forward compatibility.
 //
-// UserService is the internal gRPC contract for user CRUD.
+// UserService is the Service API contract for user CRUD (gRPC).
 // It is intended for service-to-service traffic only and must not be exposed publicly.
 type UserServiceServer interface {
 	// CreateUser creates a user. Duplicate username or email returns ALREADY_EXISTS.

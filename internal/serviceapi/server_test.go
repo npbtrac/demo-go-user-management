@@ -1,4 +1,4 @@
-package grpcsvc_test
+package serviceapi_test
 
 import (
 	"context"
@@ -12,18 +12,18 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	usermgmtv1 "github.com/npbtrac/demo-go-user-management/api/proto/usermgmt/v1"
-	grpcsvc "github.com/npbtrac/demo-go-user-management/internal/grpc"
+	"github.com/npbtrac/demo-go-user-management/internal/serviceapi"
 	"github.com/npbtrac/demo-go-user-management/internal/user"
 )
 
-func startGRPC(t *testing.T, svc *user.Service) usermgmtv1.UserServiceClient {
+func startServiceAPI(t *testing.T, svc *user.Service) usermgmtv1.UserServiceClient {
 	t.Helper()
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
 	gs := grpc.NewServer()
-	usermgmtv1.RegisterUserServiceServer(gs, grpcsvc.NewServer(svc))
+	usermgmtv1.RegisterUserServiceServer(gs, serviceapi.NewServer(svc))
 	go gs.Serve(ln)
 	t.Cleanup(gs.Stop)
 	conn, err := grpc.NewClient(ln.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -34,9 +34,9 @@ func startGRPC(t *testing.T, svc *user.Service) usermgmtv1.UserServiceClient {
 	return usermgmtv1.NewUserServiceClient(conn)
 }
 
-func TestGRPCCRUDAndErrors(t *testing.T) {
+func TestServiceAPICRUDAndErrors(t *testing.T) {
 	svc := user.NewService(user.NewFakeRepository())
-	client := startGRPC(t, svc)
+	client := startServiceAPI(t, svc)
 	ctx := context.Background()
 
 	params, err := structpb.NewStruct(map[string]any{"tier": "gold"})
